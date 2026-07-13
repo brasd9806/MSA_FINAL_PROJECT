@@ -1,0 +1,8 @@
+rootProject.name = 'msa-final-project'
+
+include 'common'
+include 'user-service'
+include 'product-service'
+include 'cart-service'
+include 'order-service'
+include 'payment-service'

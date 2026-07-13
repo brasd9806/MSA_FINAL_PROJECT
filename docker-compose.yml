@@ -1,0 +1,125 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  user-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE_NAME: user-service
+    ports:
+      - "8081:8081"
+    environment:
+      - DB_URL=jdbc:postgresql://db:5432/postgres?currentSchema=public
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=password
+      - JWT_SECRET=sparta-msa-lesson-secret-key-must-be-at-least-256bits-long
+      - JWT_EXPIRATION=86400000
+    depends_on:
+      db:
+        condition: service_healthy
+
+  product-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE_NAME: product-service
+    ports:
+      - "8082:8082"
+    environment:
+      - DB_URL=jdbc:postgresql://db:5432/postgres?currentSchema=public
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=password
+      - JWT_SECRET=sparta-msa-lesson-secret-key-must-be-at-least-256bits-long
+      - JWT_EXPIRATION=86400000
+      - USER_SERVICE_URL=http://user-service:8081
+    depends_on:
+      db:
+        condition: service_healthy
+      user-service:
+        condition: service_started
+
+  cart-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE_NAME: cart-service
+    ports:
+      - "8083:8083"
+    environment:
+      - DB_URL=jdbc:postgresql://db:5432/postgres?currentSchema=public
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=password
+      - JWT_SECRET=sparta-msa-lesson-secret-key-must-be-at-least-256bits-long
+      - JWT_EXPIRATION=86400000
+      - PRODUCT_SERVICE_URL=http://product-service:8082
+    depends_on:
+      db:
+        condition: service_healthy
+      product-service:
+        condition: service_started
+
+  order-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE_NAME: order-service
+    ports:
+      - "8084:8084"
+    environment:
+      - DB_URL=jdbc:postgresql://db:5432/postgres?currentSchema=public
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=password
+      - JWT_SECRET=sparta-msa-lesson-secret-key-must-be-at-least-256bits-long
+      - JWT_EXPIRATION=86400000
+      - USER_SERVICE_URL=http://user-service:8081
+      - PRODUCT_SERVICE_URL=http://product-service:8082
+      - CART_SERVICE_URL=http://cart-service:8083
+    depends_on:
+      db:
+        condition: service_healthy
+      cart-service:
+        condition: service_started
+
+  payment-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE_NAME: payment-service
+    ports:
+      - "8085:8085"
+    environment:
+      - DB_URL=jdbc:postgresql://db:5432/postgres?currentSchema=public
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=password
+      - JWT_SECRET=sparta-msa-lesson-secret-key-must-be-at-least-256bits-long
+      - JWT_EXPIRATION=86400000
+      - ORDER_SERVICE_URL=http://order-service:8084
+    depends_on:
+      db:
+        condition: service_healthy
+      order-service:
+        condition: service_started
+
+volumes:
+  postgres_data:
