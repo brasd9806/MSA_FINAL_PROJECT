@@ -5,11 +5,13 @@ import com.sparta.msa.product.category.exception.CategoryErrorCode;
 import com.sparta.msa.product.category.exception.CategoryException;
 import com.sparta.msa.product.category.repository.CategoryRepository;
 import com.sparta.msa.product.dto.request.ProductRequest;
+import com.sparta.msa.product.dto.request.ProductSearchRequest;
 import com.sparta.msa.product.dto.response.ProductResponse;
 import com.sparta.msa.product.entity.Product;
 import com.sparta.msa.product.exception.ProductErrorCode;
 import com.sparta.msa.product.exception.ProductException;
 import com.sparta.msa.product.repository.ProductRepository;
+import com.sparta.msa.product.repository.ProductSpecification;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,6 +27,12 @@ public class ProductService {
 
     public List<ProductResponse> list() {
         return productRepository.findAll().stream()
+                .map(ProductResponse::from)
+                .toList();
+    }
+
+    public List<ProductResponse> search(ProductSearchRequest request) {
+        return productRepository.findAll(ProductSpecification.from(request)).stream()
                 .map(ProductResponse::from)
                 .toList();
     }

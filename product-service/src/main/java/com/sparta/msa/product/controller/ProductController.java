@@ -2,6 +2,7 @@ package com.sparta.msa.product.controller;
 
 import com.sparta.msa.common.ApiResponse;
 import com.sparta.msa.product.dto.request.ProductRequest;
+import com.sparta.msa.product.dto.request.ProductSearchRequest;
 import com.sparta.msa.product.dto.response.ProductResponse;
 import com.sparta.msa.product.service.ProductService;
 import jakarta.validation.Valid;
@@ -21,6 +22,11 @@ public class ProductController {
     @GetMapping
     public ResponseEntity<ApiResponse<List<ProductResponse>>> list() {
         return ApiResponse.success(productService.list());
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<ApiResponse<List<ProductResponse>>> search(@ModelAttribute ProductSearchRequest request) {
+        return ApiResponse.success(productService.search(request));
     }
 
     @GetMapping("/{id}")
