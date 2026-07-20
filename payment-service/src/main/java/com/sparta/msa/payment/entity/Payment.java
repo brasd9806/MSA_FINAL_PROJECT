@@ -1,5 +1,6 @@
 package com.sparta.msa.payment.entity;
 
+import com.sparta.msa.payment.enums.PaymentStatus;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
