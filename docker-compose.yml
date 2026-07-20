@@ -185,6 +185,23 @@ services:
       db:
         condition: service_healthy
 
+  ai-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE_NAME: ai-service
+    ports:
+      - "8089:8089"
+    environment:
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_EXPIRATION=${JWT_EXPIRATION:-86400000}
+      - LOGSTASH_HOST=logstash
+      - OLLAMA_URL=http://host.docker.internal:11434
+      - OLLAMA_MODEL=llama3.2
+    depends_on:
+      - logstash
+
   elasticsearch:
     image: elasticsearch:8.13.0
     container_name: elasticsearch
