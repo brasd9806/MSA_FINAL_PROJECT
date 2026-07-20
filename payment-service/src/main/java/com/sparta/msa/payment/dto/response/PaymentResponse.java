@@ -16,7 +16,9 @@ public class PaymentResponse {
 
     Long id;
     Long orderId;
-    Long amount;
+    Long totalAmount;
+    Long cancelledAmount;
+    Long remainingAmount;
     PaymentStatus status;
     LocalDateTime createdAt;
 
@@ -24,8 +26,10 @@ public class PaymentResponse {
         return PaymentResponse.builder()
                 .id(payment.getId())
                 .orderId(payment.getOrderId())
-                .amount(payment.getAmount())
-                .status(payment.getStatus())
+                .totalAmount(payment.getTotalAmount())
+                .cancelledAmount(payment.getCancelledAmount())
+                .remainingAmount(payment.remainingAmount())
+                .status(payment.currentStatus())
                 .createdAt(payment.getCreatedAt())
                 .build();
     }

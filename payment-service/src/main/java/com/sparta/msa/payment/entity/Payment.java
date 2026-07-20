@@ -1,6 +1,5 @@
 package com.sparta.msa.payment.entity;
 
-import com.sparta.msa.payment.enums.PaymentStatus;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -26,24 +25,34 @@ public class Payment {
     Long orderId;
 
     @Column(nullable = false)
-    Long amount;
+    Long totalAmount;
 
-    @Enumerated(EnumType.STRING)
+    // 누적 취소 금액 (부분취소 추적용)
     @Column(nullable = false)
-    PaymentStatus status;
+    Long cancelledAmount;
 
     @Column(nullable = false, updatable = false)
     @CreationTimestamp
     LocalDateTime createdAt;
 
     @Builder
-    public Payment(Long orderId, Long amount) {
+    public Payment(Long orderId, Long totalAmount) {
         this.orderId = orderId;
-        this.amount = amount;
-        this.status = PaymentStatus.COMPLETED;
+        this.totalAmount = totalAmount;
+        this.cancelledAmount = 0L;
     }
 
-    public void cancel() {
-        this.status = PaymentStatus.CANCELLED;
+    public void addCancelledAmount(Long amount) {
+        this.cancelledAmount += amount;
+    }
+
+    public Long remainingAmount() {
+        return this.totalAmount - this.cancelledAmount;
+    }
+
+    public PaymentStatus currentStatus() {
+        if (cancelledAmount == 0) return com.sparta.msa.payment.enums.PaymentStatus.APPROVED;
+        if (cancelledAmount.equals(totalAmount)) return com.sparta.msa.payment.enums.PaymentStatus.CANCELLED;
+        return com.sparta.msa.payment.enums.PaymentStatus.PARTIAL_CANCEL;
     }
 }
